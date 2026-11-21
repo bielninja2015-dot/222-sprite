@@ -1,0 +1,77 @@
+import pygame, sys, random
+
+pygame.init()
+tela = pygame.display.set_mode((800, 600))
+pygame.display.set_caption('Sprite of sprite')
+
+
+player = pygame.transform.scale(pygame.image.load('spriteplayer.png').convert_alpha(), (100, 135))
+
+
+px, py = 400, 300
+vel = 1
+largura_j, altura_j = 100, 135
+
+
+moeda_img = pygame.Surface((20, 20))
+moeda_img.fill((255, 255, 0))
+
+
+moedas = []
+
+def criar_moedas():
+    moedas.clear()  
+    for _ in range(5):  
+        x = random.randint(50, 750)   
+        y = random.randint(50, 550)
+        moedas.append([x, y, True])  
+
+def resetar():
+    global px, py
+    px, py = 400, 300
+    criar_moedas()
+
+criar_moedas()
+
+rodando = True
+while rodando:
+    for e in pygame.event.get():
+        if e.type == pygame.QUIT:
+            rodando = False
+        if e.type == pygame.KEYDOWN:
+            if e.key == pygame.K_r:
+                resetar()
+
+    # Movimento
+    tecla = pygame.key.get_pressed()
+    if tecla[pygame.K_LEFT]:  px -= vel
+    if tecla[pygame.K_RIGHT]: px += vel
+    if tecla[pygame.K_UP]:    py -= vel
+    if tecla[pygame.K_DOWN]:  py += vel
+
+    # Limites da tela
+    px = max(0, min(px, 800 - largura_j))
+    py = max(0, min(py, 600 - altura_j))
+
+    # Colisão com TODAS as moedas
+    jogador_rect = pygame.Rect(px, py, largura_j, altura_j)
+    for moeda in moedas:
+        mx, my, visivel = moeda
+        if visivel:
+            moeda_rect = pygame.Rect(mx, my, 20, 20)
+            if jogador_rect.colliderect(moeda_rect):
+                moeda[2] = False  # some com essa moeda
+                
+
+    # Desenha tudo
+    tela.fill((0, 0, 0))
+    tela.blit(player, (px, py))
+    for moeda in moedas:
+        mx, my, visivel = moeda
+        if visivel:
+            tela.blit(moeda_img, (mx, my))
+
+    pygame.display.flip()
+
+pygame.quit()
+sys.exit()
